@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: personalize-domain-configmap
+  namespace: personalize-domain-dev
+data:
+  NODE_ENV: "dev"
+  MONGO_HOST: "xxxxxxx.mongodb.net"
+  MONGO_PORT: "27017"
+  MONGO_DATABASE: "personalize-domain"
+  PORT: "3000"
+  AWS_REGION: "ap-southeast-1"

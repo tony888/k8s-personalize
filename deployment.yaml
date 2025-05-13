@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: personalize-domain-dev
+  labels:
+    app: personalize-domain
+    tier: back-end
+    version: v1
+  name: personalize-domain
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personalize-domain
+  template:
+    metadata:
+      labels:
+        app: personalize-domain
+    spec:
+      serviceAccountName: personalize-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      # imagePullSecrets:
+      #   - name: gitlab-account
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: docdb-pem-secret
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: personalize-spc
+
+      containers:
+        - image: xxxxxxxx.dkr.ecr.ap-southeast-1.amazonaws.com/xxxxxxx:yyyyyy
+          name: personalize-domain
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          resources:
+            requests:
+              memory: "1Mi"
+              cpu: "1m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /personalize/api/health-check
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /personalize/api/health-check
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: secret-volume
+              readOnly: true
+              mountPath: "/app/dist/src/global-bundle.pem"
+              subPath: "global-bundle.pem"
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          envFrom:
+            - configMapRef:
+                name: personalize-domain-configmap
+            - secretRef:
+                name: personalize-domain-secret

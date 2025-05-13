@@ -1,0 +1,39 @@
+# Kubernetes secrets should not be committed
+secrets.*
+secret.*
+*.secret.yaml
+*.secret.yml
+docdb-pem-secret.yaml
+# Helm chart archives and temporary files
+*.tgz
+charts/
+tmpcharts/
+requirements.lock
+requirements.yaml # if managed by a script
+
+# Kustomize build artifacts
+kustomize/build/
+.kustomize-build*
+
+# General ignores
+.DS_Store
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# Cloud provider specific files (if applicable)
+# .gcloud/
+# .aws/
+# .azure/
+
+# Terraform state files (if using Terraform for infrastructure)
+# .terraform/
+# terraform.tfstate
+# terraform.tfstate.backup
+# .terraform.lock.hcl
+
+# VS Code
+.vscode/
